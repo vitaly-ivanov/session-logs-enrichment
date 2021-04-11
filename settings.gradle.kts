@@ -11,4 +11,7 @@ gradleEnterprise {
     }
 }
 
-include("etl")
+include(
+    "etl",
+    "etl-local"
+)

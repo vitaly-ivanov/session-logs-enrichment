@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm")
-//    id(Plugins.ktlint)
     id(Plugins.shadowJar) version Versions.shadowJarPlugin
+    `java-library`
 }
 
 group = "ru.vitaly.etl"
@@ -27,10 +27,9 @@ tasks {
 }
 
 dependencies {
-    implementation(Libs.sparkSql)
-    implementation(Libs.kotlinxSpark)
-    implementation(Libs.scalaLibrary)
+    compileOnly(Libs.sparkSql)
 
+    implementation(Libs.kotlinxSpark)
     implementation(Libs.typeSafeConfig)
     implementation(Libs.typeSafeConfigGuice)
     implementation(Libs.kotlinReflect)
