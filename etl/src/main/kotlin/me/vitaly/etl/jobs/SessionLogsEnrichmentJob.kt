@@ -1,5 +1,6 @@
 package me.vitaly.etl.jobs
 
+import com.google.common.annotations.VisibleForTesting
 import me.vitaly.etl.model.RawLog
 import me.vitaly.etl.model.SessionLog
 import org.apache.spark.sql.*
@@ -33,28 +34,40 @@ object SessionLogsEnrichmentJob {
         rawLogFiles: Set<String>,
         sessionLogFiles: Set<String>,
         resultPath: String,
-        analyzeDays: Int,
         sessionMaxMinutesBetweenEvents: Int,
         userEvents: Set<String>,
     ) {
         val rawLogDataset = readRawLogDataset(spark, rawLogFiles)
         val sessionDataset = readSessionLogDataset(spark, sessionLogFiles)
-        rawLogDataset
+        enrichLogs(rawLogDataset, sessionDataset, userEvents, sessionMaxMinutesBetweenEvents)
+            .writeWithPartitions(resultPath)
+    }
+
+    @VisibleForTesting
+    internal fun enrichLogs(
+        rawLogDataset: Dataset<RawLog>,
+        sessionDataset: Dataset<SessionLog>,
+        userEvents: Set<String>,
+        sessionMaxMinutesBetweenEvents: Int
+    ): Dataset<SessionLog> {
+        return rawLogDataset
             .map { it.toSessionLog() }
             .union(sessionDataset)
             .groupByKey { c((it.product), it.device_id) }
-            .flatMapGroups { _, iterator -> fillSession(
-                iterator,
-                userEvents,
-                sessionMaxMinutesBetweenEvents
-            ) }
-            .writeWithPartitions(resultPath)
+            .flatMapGroups { _, iterator ->
+                fillSession(
+                    iterator,
+                    userEvents,
+                    TimeUnit.MINUTES.toMillis(sessionMaxMinutesBetweenEvents.toLong())
+                )
+            }
+
     }
 
     private fun fillSession(
         iterator: Iterator<SessionLog>,
         userEvents: Set<String>,
-        sessionMaxMinutesBetweenEvents: Int
+        sessionMaxMillisBetweenEvents: Long
     ): Iterator<SessionLog> {
         var sessionId: String? = null
         var lastSessionEventTimestamp: Long? = null
@@ -63,14 +76,14 @@ object SessionLogsEnrichmentJob {
             .mapNotNull { row ->
                 when {
                     isAlreadyProcessedLog(row) -> {
-                        sessionId = row.session_id
-                        lastSessionEventTimestamp = row.timestamp
+                        sessionId = if (row.session_id == NA_VALUE) null else row.session_id
+                        lastSessionEventTimestamp = if (row.session_id == NA_VALUE) null else row.timestamp
                         // session logs required only for calculations, they should not be stored
                         return@mapNotNull null
                     }
-                    isNeededToStartSession(lastSessionEventTimestamp, row, sessionMaxMinutesBetweenEvents) ->
+                    isNeededToStartSession(lastSessionEventTimestamp, row, sessionMaxMillisBetweenEvents) ->
                         if (row.event in userEvents) {
-                            sessionId = "${row.device_id}#${row.product}#${row.timestamp}"
+                            sessionId = buildSessionId(row.device_id, row.product, row.timestamp)
                             lastSessionEventTimestamp = row.timestamp
                         } else {
                             // set no active sessions
@@ -85,19 +98,21 @@ object SessionLogsEnrichmentJob {
                     timestamp = row.timestamp,
                     event = row.event,
                     product = row.product,
-                    session_id = sessionId
+                    session_id = sessionId ?: NA_VALUE
                 )
             }.iterator()
     }
+
+    internal fun buildSessionId(deviceId: String, productId: String, timestamp: Long) = "$deviceId#$productId#$timestamp"
 
     private fun isAlreadyProcessedLog(row: SessionLog) = row.session_id != null
 
     private fun isNeededToStartSession(
         lastSessionEventTimestamp: Long?,
         row: SessionLog,
-        sessionMaxMinutesBetweenEvents: Int
+        sessionMaxMillisBetweenEvents: Long
     ) = lastSessionEventTimestamp == null
-            || TimeUnit.MILLISECONDS.toMinutes(row.timestamp - lastSessionEventTimestamp) > sessionMaxMinutesBetweenEvents
+            || row.timestamp - lastSessionEventTimestamp > sessionMaxMillisBetweenEvents
 
     private fun readSessionLogDataset(spark: SparkSession, sessionLogFiles: Set<String>) = spark
         .read()
@@ -126,3 +141,5 @@ object SessionLogsEnrichmentJob {
         .mode(SaveMode.Append)
         .parquet(path)
 }
+
+internal const val NA_VALUE = "n/a"

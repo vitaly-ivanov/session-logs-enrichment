@@ -15,7 +15,6 @@ fun main() {
         rawLogFiles = setOf("data/raw/raw_logs.csv"),
         sessionLogFiles = setOf("data/processed/session_logs.csv"),
         resultPath = "data/processed",
-        analyzeDays = 5,
         sessionMaxMinutesBetweenEvents = 5,
         userEvents = setOf("a", "b", "c")
     )

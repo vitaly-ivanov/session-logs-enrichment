@@ -37,7 +37,7 @@ dependencies {
     testImplementation(Libs.junit)
     testImplementation(Libs.junitEngine)
     testImplementation(Libs.junitParams)
-//    testImplementation(Libs.sparkBaseTest)
+    testImplementation(Libs.sparkBaseTest)
     testImplementation(Libs.sparkSql)
     testImplementation(Libs.kotest)
 }

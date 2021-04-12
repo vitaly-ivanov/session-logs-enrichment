@@ -11,7 +11,7 @@ object Versions {
     const val scalaVersion = "2.12"
     const val typeSafeConfig = "1.4.1"
     const val typeSafeConfigGuice = "0.1.0"
-//    const val sparkBaseTest = "${sparkSql}_1.0.0"
+    const val sparkBaseTest = "${sparkSql}_1.0.0"
     const val kotlinxSpark = "1.0.0-preview1"
     const val kotlinJvm = "11"
     const val kotlin = "1.4.32"
@@ -40,6 +40,6 @@ object Libs {
     const val junit = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"
     const val junitEngine = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit}"
     const val junitParams = "org.junit.jupiter:junit-jupiter-params:${Versions.junit}"
-//    const val sparkBaseTest = "com.holdenkarau:spark-testing-base_${Versions.scalaVersion}:${Versions.sparkBaseTest}"
+    const val sparkBaseTest = "com.holdenkarau:spark-testing-base_${Versions.scalaVersion}:${Versions.sparkBaseTest}"
     const val kotest = "io.kotest:kotest-assertions-core-jvm:${Versions.kotest}"
 }
