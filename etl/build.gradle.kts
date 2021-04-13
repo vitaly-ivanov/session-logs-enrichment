@@ -30,8 +30,6 @@ dependencies {
     compileOnly(Libs.sparkSql)
 
     implementation(Libs.kotlinxSpark)
-    implementation(Libs.typeSafeConfig)
-    implementation(Libs.typeSafeConfigGuice)
     implementation(Libs.kotlinReflect)
     implementation(Libs.logger)
 

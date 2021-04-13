@@ -11,7 +11,6 @@ java {
 
 dependencies {
     implementation(Libs.sparkSql)
-    implementation(Libs.typeSafeConfig)
     implementation(project(":etl"))
 }
 
