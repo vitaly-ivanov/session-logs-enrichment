@@ -33,6 +33,7 @@ dependencies {
     implementation(Libs.typeSafeConfig)
     implementation(Libs.typeSafeConfigGuice)
     implementation(Libs.kotlinReflect)
+    implementation(Libs.logger)
 
     testImplementation(Libs.junit)
     testImplementation(Libs.junitEngine)

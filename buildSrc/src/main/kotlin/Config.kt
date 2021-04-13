@@ -16,6 +16,7 @@ object Versions {
     const val kotlinJvm = "11"
     const val kotlin = "1.4.32"
     const val ktlintPlugin = "10.0.0"
+    const val loggerVersion = "2.0.6"
 
     // Libs for testing
     const val junit = "5.7.1"
@@ -35,6 +36,7 @@ object Libs {
     const val kotlinxSpark = "org.jetbrains.kotlinx.spark:kotlin-spark-api-3.0.0_${Versions.scalaVersion}" +
             ":${Versions.kotlinxSpark}"
     const val kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
+    const val logger = "io.github.microutils:kotlin-logging:${Versions.loggerVersion}"
 
     // Test libraries
     const val junit = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"

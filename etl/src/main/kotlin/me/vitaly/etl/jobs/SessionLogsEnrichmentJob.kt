@@ -116,10 +116,7 @@ object SessionLogsEnrichmentJob {
 
     private fun readSessionLogDataset(spark: SparkSession, sessionLogFiles: Set<String>) = spark
         .read()
-        .option("inferSchema", "true")
-        .option("header", "true")
-        .option("delimiter", ",")
-        .csv(*sessionLogFiles.toTypedArray())
+        .parquet(*sessionLogFiles.toTypedArray())
         .`as`(encoder<SessionLog>())
 
     private fun readRawLogDataset(spark: SparkSession, rawLogFiles: Set<String>) = spark
