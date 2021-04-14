@@ -10,8 +10,9 @@ java {
 }
 
 dependencies {
-    implementation(Libs.sparkSql)
+    implementation(Libs.jacksonCsv)
     implementation(project(":etl"))
+    implementation(Libs.logger)
 }
 
 tasks.test {

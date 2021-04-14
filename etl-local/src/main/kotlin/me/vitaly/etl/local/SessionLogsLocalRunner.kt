@@ -6,7 +6,7 @@ import me.vitaly.etl.runners.SessionLogsEnrichmentJobRunner
 import org.apache.spark.sql.SparkSession
 import java.time.LocalDate
 
-private val DATE = LocalDate.of(2021, 4, 11)
+private val DATE = LocalDate.of(2021, 4, 14)
 
 fun main() {
     val config = ConfigFactory.load().getConfig("sessionLogsJob")

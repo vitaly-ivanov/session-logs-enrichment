@@ -13,5 +13,6 @@ gradleEnterprise {
 
 include(
     "etl",
-    "etl-local"
+    "etl-local",
+    "data-generator"
 )

@@ -38,7 +38,10 @@ object SessionLogsEnrichmentJob {
         userEvents: Set<String>,
     ) {
         val rawLogDataset = readRawLogDataset(spark, rawLogFiles)
-        val sessionDataset = readSessionLogDataset(spark, sessionLogFiles)
+        val sessionDataset = if (sessionLogFiles.isEmpty())
+            spark.emptyDataset(encoder<SessionLog>())
+        else readSessionLogDataset(spark, sessionLogFiles)
+
         enrichLogs(rawLogDataset, sessionDataset, userEvents, sessionMaxMinutesBetweenEvents)
             .writeWithPartitions(resultPath)
     }

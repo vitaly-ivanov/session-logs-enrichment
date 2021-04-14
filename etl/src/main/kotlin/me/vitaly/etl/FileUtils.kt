@@ -11,8 +11,11 @@ fun getDatePartitionedFiles(
     basePath: String,
     date: LocalDate,
     fileFilter: (String) -> Boolean = { true }
-): Set<String> =
-    fileSystem.listStatus(Path(basePath))
+): Set<String> {
+    if (!fileSystem.exists(Path(basePath))) {
+        return setOf()
+    }
+    return fileSystem.listStatus(Path(basePath))
         .asSequence()
         .filter { it.isDirectory }
         .filter { it.path.name == "year=${date.year.toString().padStart(4, '0')}" }
@@ -27,3 +30,4 @@ fun getDatePartitionedFiles(
         .map { it.path.toString() }
         .filter(fileFilter)
         .toSet()
+}
