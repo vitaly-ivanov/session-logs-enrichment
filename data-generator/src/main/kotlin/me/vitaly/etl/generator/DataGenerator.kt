@@ -13,8 +13,9 @@ private val PRODUCTS_NUMBERS = 1..50
 private val DEVICES_NUMBERS = 1..100_000
 private val EVENTS = 'a'..'k'
 private val SECONDS_BETWEEN_EVENTS = 1..100
-private val DATE = LocalDate.of(2021, 4, 13)
 
+// events start date
+private val DATE = LocalDate.of(2021, 4, 13)
 private var timestamp = DATE.atStartOfDay().toEpochSecond(ZoneOffset.UTC) * 1000
 
 private val logger = mu.KotlinLogging.logger {}

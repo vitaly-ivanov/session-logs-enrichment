@@ -47,6 +47,9 @@ object SessionLogsEnrichmentJob {
     }
 
     @VisibleForTesting
+    /**
+     * Main transformations without read/write operations
+     */
     internal fun enrichLogs(
         rawLogDataset: Dataset<RawLog>,
         sessionDataset: Dataset<SessionLog>,
@@ -56,6 +59,7 @@ object SessionLogsEnrichmentJob {
         return rawLogDataset
             .map { it.toSessionLog() }
             .union(sessionDataset)
+            // looks like in general we can group by these keys without OOM problems due to high-cardinality of these values
             .groupByKey { c((it.product), it.device_id) }
             .flatMapGroups { _, iterator ->
                 fillSession(
@@ -67,6 +71,10 @@ object SessionLogsEnrichmentJob {
 
     }
 
+    /**
+     * Takes combined raw and session logs, grouped by product and device_id.
+     * Returns Session Logs with filled session_id only for new logs.
+     */
     private fun fillSession(
         iterator: Iterator<SessionLog>,
         userEvents: Set<String>,
@@ -75,6 +83,7 @@ object SessionLogsEnrichmentJob {
         var sessionId: String? = null
         var lastSessionEventTimestamp: Long? = null
         return iterator.asSequence()
+            // sorting inside the group is required to calculate the session
             .sortedBy { it.timestamp }
             .mapNotNull { row ->
                 when {
@@ -129,17 +138,20 @@ object SessionLogsEnrichmentJob {
         .option("delimiter", ",")
         .csv(*rawLogFiles.toTypedArray())
         .`as`(encoder<RawLog>())
-
-    private fun <T> Dataset<T>.writeWithPartitions(path: String) = this
-        .withColumn("timestamp_ts", col("timestamp").divide(functions.lit(1000)).cast(TimestampType))
-        .withColumn("year", format_string("%04d", year(functions.col("timestamp_ts"))))
-        .withColumn("month", format_string("%02d", month(functions.col("timestamp_ts"))))
-        .withColumn("day", format_string("%02d", dayofmonth(functions.col("timestamp_ts"))))
-        .drop("timestamp_ts")
-        .write()
-        .partitionBy("year", "month", "day")
-        .mode(SaveMode.Append)
-        .parquet(path)
 }
 
 internal const val NA_VALUE = "n/a"
+
+/**
+ * Saves Dataset partitioned by year, month, day to directories like $path/processed/year=$year/month=$month/day=$day
+ */
+private fun <T> Dataset<T>.writeWithPartitions(path: String) = this
+    .withColumn("timestamp_ts", col("timestamp").divide(functions.lit(1000)).cast(TimestampType))
+    .withColumn("year", format_string("%04d", year(functions.col("timestamp_ts"))))
+    .withColumn("month", format_string("%02d", month(functions.col("timestamp_ts"))))
+    .withColumn("day", format_string("%02d", dayofmonth(functions.col("timestamp_ts"))))
+    .drop("timestamp_ts")
+    .write()
+    .partitionBy("year", "month", "day")
+    .mode(SaveMode.Append)
+    .parquet(path)

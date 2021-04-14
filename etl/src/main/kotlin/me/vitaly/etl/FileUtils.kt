@@ -6,6 +6,9 @@ import java.time.LocalDate
 
 const val PROCESSED_SUFFIX = ".processed"
 
+/**
+ * Get files from the folder structure like $path/processed/year=$year/month=$month/day=$day
+ */
 fun getDatePartitionedFiles(
     fileSystem: FileSystem,
     basePath: String,

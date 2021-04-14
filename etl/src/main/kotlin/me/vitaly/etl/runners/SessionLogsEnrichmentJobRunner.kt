@@ -19,6 +19,14 @@ class SessionLogsEnrichmentJobRunner(
     private val sessionMaxMinutesBetweenEvents: Int,
     private val userEvents: Set<String>
 ) {
+    /**
+     * Makes validations that input logs has not been already processed.
+     * Calculates files to process based on configs and input parameters
+     * Runs the Spark job.
+     * Mark files as processed after the job is finished.
+     *
+     * @param date - date of receiving event
+     */
     fun runJob(date: LocalDate) {
         // ensure UTC timezone
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
