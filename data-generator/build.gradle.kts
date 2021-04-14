@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    id(Plugins.ktlint)
 }
 
 group = "ru.vitaly.etl"

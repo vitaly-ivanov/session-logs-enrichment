@@ -4,7 +4,7 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 plugins {
     id(Plugins.versions) version Versions.versionsPlugin
     kotlin("jvm") version Versions.kotlin
-//    id(Plugins.ktlint) version Versions.ktlintPlugin
+    id(Plugins.ktlint) version Versions.ktlintPlugin
 }
 
 allprojects {

@@ -3,11 +3,19 @@ package me.vitaly.etl.jobs
 import com.google.common.annotations.VisibleForTesting
 import me.vitaly.etl.model.RawLog
 import me.vitaly.etl.model.SessionLog
-import org.apache.spark.sql.*
-import org.apache.spark.sql.functions.*
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.functions
+import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.functions.format_string
+import org.apache.spark.sql.functions.year
+import org.apache.spark.sql.functions.month
+import org.apache.spark.sql.functions.dayofmonth
 import org.apache.spark.sql.types.DataTypes.TimestampType
-import org.jetbrains.kotlinx.spark.api.*
+import org.jetbrains.kotlinx.spark.api.encoder
 import org.jetbrains.kotlinx.spark.api.SparkSession
+import org.jetbrains.kotlinx.spark.api.map
+import org.jetbrains.kotlinx.spark.api.c
+import org.jetbrains.kotlinx.spark.api.groupByKey
 import java.util.concurrent.TimeUnit
 
 // Представим, что есть набор данных со следующей структурой:
@@ -68,7 +76,6 @@ object SessionLogsEnrichmentJob {
                     TimeUnit.MINUTES.toMillis(sessionMaxMinutesBetweenEvents.toLong())
                 )
             }
-
     }
 
     /**
@@ -115,7 +122,8 @@ object SessionLogsEnrichmentJob {
             }.iterator()
     }
 
-    internal fun buildSessionId(deviceId: String, productId: String, timestamp: Long) = "$deviceId#$productId#$timestamp"
+    internal fun buildSessionId(deviceId: String, productId: String, timestamp: Long) =
+        "$deviceId#$productId#$timestamp"
 
     private fun isAlreadyProcessedLog(row: SessionLog) = row.session_id != null
 
@@ -123,8 +131,8 @@ object SessionLogsEnrichmentJob {
         lastSessionEventTimestamp: Long?,
         row: SessionLog,
         sessionMaxMillisBetweenEvents: Long
-    ) = lastSessionEventTimestamp == null
-            || row.timestamp - lastSessionEventTimestamp > sessionMaxMillisBetweenEvents
+    ) = lastSessionEventTimestamp == null ||
+        row.timestamp - lastSessionEventTimestamp > sessionMaxMillisBetweenEvents
 
     private fun readSessionLogDataset(spark: SparkSession, sessionLogFiles: Set<String>) = spark
         .read()

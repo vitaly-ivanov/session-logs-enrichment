@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     id(Plugins.shadowJar) version Versions.shadowJarPlugin
     `java-library`
+    id(Plugins.ktlint)
 }
 
 group = "ru.vitaly.etl"

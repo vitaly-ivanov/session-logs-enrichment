@@ -3,7 +3,9 @@ package me.vitaly.etl.generator
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import java.io.FileWriter
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.createTempFile
 
 class CsvMaker(val csvMapper: CsvMapper) {
     @OptIn(ExperimentalPathApi::class)

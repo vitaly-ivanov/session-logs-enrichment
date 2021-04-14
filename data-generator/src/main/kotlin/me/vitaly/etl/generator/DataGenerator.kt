@@ -6,7 +6,10 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.ZoneOffset
-import kotlin.io.path.*
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.copyTo
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.name
 
 private const val ROWS_NUMBER = 1_000_000
 private val PRODUCTS_NUMBERS = 1..50
@@ -25,7 +28,7 @@ fun main() {
 }
 
 class DataGenerator(private val csvMaker: CsvMaker) {
-    fun generate() = (1.. ROWS_NUMBER)
+    fun generate() = (1..ROWS_NUMBER)
         .map {
             RawLog(
                 device_id = "device${DEVICES_NUMBERS.random()}",
@@ -42,9 +45,9 @@ class DataGenerator(private val csvMaker: CsvMaker) {
             .let { tmpFile ->
                 val dataDirectory = Paths.get(
                     "data/raw/" +
-                            "year=${tomorrow.year.toString().padStart(4, '0')}/" +
-                            "month=${tomorrow.monthValue.toString().padStart(2, '0')}/" +
-                            "day=${tomorrow.dayOfMonth.toString().padStart(2, '0')}/"
+                        "year=${tomorrow.year.toString().padStart(4, '0')}/" +
+                        "month=${tomorrow.monthValue.toString().padStart(2, '0')}/" +
+                        "day=${tomorrow.dayOfMonth.toString().padStart(2, '0')}/"
                 )
                 Files.createDirectories(dataDirectory)
                 tmpFile.copyTo(Paths.get(dataDirectory.absolutePathString() + "/" + tmpFile.name + ".csv"))

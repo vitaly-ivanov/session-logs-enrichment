@@ -11,9 +11,11 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import java.time.*
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
-internal class SessionLogsEnrichmentJobTest: JavaDatasetSuiteBase() {
+internal class SessionLogsEnrichmentJobTest : JavaDatasetSuiteBase() {
     @BeforeEach
     fun beforeEach() {
         runBefore()
@@ -36,7 +38,7 @@ internal class SessionLogsEnrichmentJobTest: JavaDatasetSuiteBase() {
         private const val SESSION_MINUTES_BETWEEN_EVENTS = 5
         private val userEvents = setOf("a", "b", "c")
 
-        private val rawLogs =  listOf(
+        private val rawLogs = listOf(
             RawLog("device1", createMillis(2020, 4, 1, 10, 0, 0), "a", "product1"),
             RawLog("device2", createMillis(2020, 4, 1, 10, 1, 0), "a", "product1"),
             RawLog("device1", createMillis(2020, 4, 1, 10, 0, 30), "b", "product2"),
@@ -68,7 +70,11 @@ internal class SessionLogsEnrichmentJobTest: JavaDatasetSuiteBase() {
                     rawLogs[0].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
                     rawLogs[1].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
                     rawLogs[2].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
-                    rawLogs[3].let { it.toSessionLog(buildSessionId(rawLogs[0].device_id, rawLogs[0].product, rawLogs[0].timestamp)) },
+                    rawLogs[3].let {
+                        it.toSessionLog(
+                            buildSessionId(rawLogs[0].device_id, rawLogs[0].product, rawLogs[0].timestamp)
+                        )
+                    },
                     rawLogs[4].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
                     rawLogs[5].let { it.toSessionLog(NA_VALUE) },
                     rawLogs[6].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
@@ -79,13 +85,24 @@ internal class SessionLogsEnrichmentJobTest: JavaDatasetSuiteBase() {
                 rawLogs,
                 listOf(
                     SessionLog("device1", createMillis(2020, 4, 1, 9, 56, 0), "g", "product1", NA_VALUE),
-                    SessionLog("device2", createMillis(2020, 4, 1, 9, 59, 0), "d", "product1", buildSessionId("device0", "product0", Instant.EPOCH.toEpochMilli()))
+                    SessionLog(
+                        "device2", createMillis(2020, 4, 1, 9, 59, 0), "d", "product1",
+                        buildSessionId("device0", "product0", Instant.EPOCH.toEpochMilli())
+                    )
                 ),
                 listOf(
                     rawLogs[0].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
-                    rawLogs[1].let { it.toSessionLog(buildSessionId("device0", "product0", Instant.EPOCH.toEpochMilli())) },
+                    rawLogs[1].let {
+                        it.toSessionLog(
+                            buildSessionId("device0", "product0", Instant.EPOCH.toEpochMilli())
+                        )
+                    },
                     rawLogs[2].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
-                    rawLogs[3].let { it.toSessionLog(buildSessionId(rawLogs[0].device_id, rawLogs[0].product, rawLogs[0].timestamp)) },
+                    rawLogs[3].let {
+                        it.toSessionLog(
+                            buildSessionId(rawLogs[0].device_id, rawLogs[0].product, rawLogs[0].timestamp)
+                        )
+                    },
                     rawLogs[4].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
                     rawLogs[5].let { it.toSessionLog(NA_VALUE) },
                     rawLogs[6].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
@@ -103,5 +120,6 @@ internal data class TestData(
 )
 
 private fun createMillis(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) = OffsetDateTime.of(
-    year, month, day, hour, minute, second, 0, ZoneOffset.UTC)
+    year, month, day, hour, minute, second, 0, ZoneOffset.UTC
+)
     .toEpochSecond() * 1000
