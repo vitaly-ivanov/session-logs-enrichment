@@ -48,6 +48,12 @@ internal class SessionLogsEnrichmentJobTest : JavaDatasetSuiteBase() {
             RawLog("device1", createMillis(2020, 4, 2, 10, 0, 30), "a", "product1"),
         )
 
+        private val technicalEventsBetweenUserOnesRasLogs = listOf(
+            RawLog("device1", createMillis(2020, 4, 1, 10, 0, 0), "a", "product1"),
+            RawLog("device1", createMillis(2020, 4, 1, 10, 4, 0), "j", "product1"),
+            RawLog("device1", createMillis(2020, 4, 1, 10, 8, 30), "a", "product1"),
+        )
+
         @JvmStatic
         @AfterAll
         fun afterEach() {
@@ -107,7 +113,29 @@ internal class SessionLogsEnrichmentJobTest : JavaDatasetSuiteBase() {
                     rawLogs[5].let { it.toSessionLog(NA_VALUE) },
                     rawLogs[6].let { it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp)) },
                 )
-            )
+            ),
+            TestData(
+                "technical events between user ones",
+                technicalEventsBetweenUserOnesRasLogs,
+                listOf(),
+                listOf(
+                    technicalEventsBetweenUserOnesRasLogs[0].let {
+                        it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp))
+                    },
+                    technicalEventsBetweenUserOnesRasLogs[1].let {
+                        it.toSessionLog(
+                            buildSessionId(
+                                technicalEventsBetweenUserOnesRasLogs[0].device_id,
+                                technicalEventsBetweenUserOnesRasLogs[0].product,
+                                technicalEventsBetweenUserOnesRasLogs[0].timestamp
+                            )
+                        )
+                    },
+                    technicalEventsBetweenUserOnesRasLogs[2].let {
+                        it.toSessionLog(buildSessionId(it.device_id, it.product, it.timestamp))
+                    }
+                )
+            ),
         )
     }
 }

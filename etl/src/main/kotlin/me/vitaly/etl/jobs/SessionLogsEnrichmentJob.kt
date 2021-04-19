@@ -110,7 +110,7 @@ object SessionLogsEnrichmentJob {
                             lastSessionEventTimestamp = null
                         }
                     // continue old session
-                    else -> lastSessionEventTimestamp = row.timestamp
+                    else -> if (row.event in userEvents) lastSessionEventTimestamp = row.timestamp
                 }
                 SessionLog(
                     device_id = row.device_id,
